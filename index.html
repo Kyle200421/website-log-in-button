@@ -217,6 +217,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            border: 1px solid #e1e1e1;
+        }
+
+        .social-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .social-btn:active {
+            transform: scale(0.95);
         }
 
         .social-btn img {
@@ -256,6 +268,7 @@
             transform: scale(0.95);
             opacity: 0;
             transition: all 0.3s ease;
+            z-index: 1001;
         }
 
         .modal-overlay.show .social-accounts {
@@ -347,17 +360,11 @@
         }
 
         .facebook-btn {
-            background: #1877f2;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 0 15px;
+            background-color: #1877f2;
         }
 
         .facebook-btn:hover {
-            background: #166fe5;
+            background-color: #166fe5;
         }
 
         .facebook-btn img {
@@ -571,6 +578,78 @@
         .action-links a:hover {
             text-decoration: underline;
         }
+
+        .recent-accounts {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .recent-accounts-title {
+            font-size: 1.1rem;
+            color: #1c1e21;
+            margin-bottom: 1rem;
+        }
+
+        .recent-accounts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .recent-account-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e1e1e1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .recent-account-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .recent-account-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .recent-account-info {
+            flex: 1;
+        }
+
+        .recent-account-name {
+            font-weight: 500;
+            color: #1c1e21;
+            margin-bottom: 0.25rem;
+        }
+
+        .recent-account-email {
+            font-size: 0.85rem;
+            color: #65676b;
+        }
+
+        .remove-account {
+            padding: 4px;
+            background: none;
+            border: none;
+            color: #65676b;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .recent-account-card:hover .remove-account {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -578,6 +657,12 @@
         <div class="login-header">
             <div class="header-buttons">
                 <h1>Log In</h1>
+            </div>
+        </div>
+        <div id="recentAccounts" class="recent-accounts" style="display: none;">
+            <h3 class="recent-accounts-title">Recent Logins</h3>
+            <div class="recent-accounts-grid" id="recentAccountsGrid">
+                <!-- Recent accounts will be added here dynamically -->
             </div>
         </div>
         <form id="loginForm">
@@ -601,10 +686,10 @@
             </div>
 
             <div class="social-buttons">
-                <button type="button" class="social-btn google-btn" onclick="toggleAccounts('google')">
+                <button type="button" class="social-btn google-btn" onclick="showGoogleModal()">
                     <img src="https://www.google.com/favicon.ico" alt="Google Logo">
                 </button>
-                <button type="button" class="social-btn facebook-btn" onclick="toggleAccounts('facebook')">
+                <button type="button" class="social-btn facebook-btn" id="facebookLoginBtn">
                     <img src="https://static.xx.fbcdn.net/rsrc.php/v3/yN/r/EwBqeC0pbHL.png" alt="Facebook Logo">
                 </button>
             </div>
@@ -656,10 +741,17 @@
                 <h3>Sign in with Facebook</h3>
                 <p>Choose an account to continue</p>
             </div>
-            <div class="account-item" onclick="selectAccount('facebook', 'Facebook App')">
-                <img src="https://ui-avatars.com/api/?name=FB&background=1877f2" alt="Facebook App Account">
+            <div class="account-item" onclick="selectAccount('facebook', 'Facebook - Windows')">
+                <img src="https://ui-avatars.com/api/?name=FB&background=1877f2" alt="Windows Account">
                 <div class="account-info">
-                    <div class="account-name">Facebook App</div>
+                    <div class="account-name">Windows Account</div>
+                    <div class="account-device">Synced with Facebook</div>
+                </div>
+            </div>
+            <div class="account-item" onclick="selectAccount('facebook', 'Mobile Device')">
+                <img src="https://ui-avatars.com/api/?name=MD&background=42b72a" alt="Mobile Account">
+                <div class="account-info">
+                    <div class="account-name">Mobile Account</div>
                     <div class="account-device">Connected to this device</div>
                 </div>
             </div>
@@ -701,10 +793,10 @@
                     </div>
                 </div>
                 <div id="emailInput" class="recovery-input">
-                    <input type="email" placeholder="Enter your email" class="input-field">
+                    <input type="email" placeholder="Enter your email" class="input-field" required>
                 </div>
                 <div id="phoneInput" class="recovery-input" style="display: none;">
-                    <input type="tel" placeholder="Enter your phone number" class="input-field">
+                    <input type="tel" placeholder="Enter your phone number" class="input-field" required>
                 </div>
                 <button type="submit" class="login-btn">Reset Password</button>
             </form>
@@ -731,18 +823,15 @@
                         <i class="fas fa-eye eye-icon closed" id="signInEyeIcon"></i>
                     </button>
                 </div>
-                <div class="forgot-password" style="text-align: left;">
-                    <a href="#" onclick="showForgotPasswordModal(event)">Forgot Password?</a>
-                </div>
                 <button type="submit" class="login-btn">Sign In</button>
                 <div class="divider">
                     <span>or continue with</span>
                 </div>
                 <div class="social-buttons" style="margin-top: 1rem;">
-                    <button type="button" class="social-btn google-btn" onclick="toggleAccounts('google')">
+                    <button type="button" class="social-btn google-btn" onclick="showGoogleModal()">
                         <img src="https://www.google.com/favicon.ico" alt="Google Logo">
                     </button>
-                    <button type="button" class="social-btn facebook-btn" onclick="toggleAccounts('facebook')">
+                    <button type="button" class="social-btn facebook-btn" id="facebookLoginBtn">
                         <img src="https://static.xx.fbcdn.net/rsrc.php/v3/yN/r/EwBqeC0pbHL.png" alt="Facebook Logo">
                     </button>
                 </div>
@@ -757,13 +846,48 @@
     <script>
         // Initialize Facebook SDK
         window.fbAsyncInit = function() {
+            console.log('Facebook SDK initialized');
             FB.init({
-                appId: 'YOUR_FACEBOOK_APP_ID',
+                appId: 'YOUR_FACEBOOK_APP_ID', // Replace this with your actual Facebook App ID
                 cookie: true,
                 xfbml: true,
                 version: 'v17.0'
             });
         };
+
+        // Add this at the beginning of your script
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded');
+            
+            // Set up Facebook button click handler
+            const facebookBtn = document.getElementById('facebookLoginBtn');
+            if (facebookBtn) {
+                console.log('Facebook button found');
+                facebookBtn.addEventListener('click', function(e) {
+                    console.log('Facebook button clicked');
+                    e.preventDefault();
+                    handleFacebookLogin();
+                });
+            } else {
+                console.error('Facebook button not found');
+            }
+        });
+
+        // Update Facebook login handler
+        function handleFacebookLogin() {
+            console.log('handleFacebookLogin called');
+            
+            const modal = document.getElementById('facebookModal');
+            const signInModal = document.getElementById('signInModal');
+            const forgotModal = document.getElementById('forgotPasswordModal');
+            const googleModal = document.getElementById('googleModal');
+            
+            // Close all other modals
+            signInModal.classList.remove('show');
+            forgotModal.classList.remove('show');
+            googleModal.classList.remove('show');
+            modal.classList.add('show');
+        }
 
         // Google Sign-In
         function handleGoogleSignIn() {
@@ -782,18 +906,6 @@
                     });
                 });
             });
-        }
-
-        // Facebook Sign-In
-        function handleFacebookSignIn() {
-            FB.login(function(response) {
-                if (response.authResponse) {
-                    FB.api('/me', { fields: 'name, email' }, function(response) {
-                        console.log('Facebook User:', response);
-                        // Handle successful Facebook sign-in here
-                    });
-                }
-            }, { scope: 'public_profile,email' });
         }
 
         // Initialize eye state
@@ -823,11 +935,6 @@
             }, 200);
         }
 
-        function toggleAccounts(provider) {
-            const modal = document.getElementById(provider + 'Modal');
-            modal.classList.add('show');
-        }
-
         function closeModal(provider) {
             const modal = document.getElementById(provider + 'Modal');
             modal.classList.remove('show');
@@ -841,6 +948,17 @@
         function selectAccount(provider, device) {
             const modal = document.getElementById(provider + 'Modal');
             modal.classList.remove('show');
+            
+            // Create a mock account for demonstration
+            const mockAccount = {
+                name: `${provider} User`,
+                email: `${provider.toLowerCase()}.user@example.com`,
+                avatar: provider === 'google' ? 
+                    'https://www.google.com/favicon.ico' : 
+                    'https://static.xx.fbcdn.net/rsrc.php/v3/yN/r/EwBqeC0pbHL.png'
+            };
+            
+            saveRecentAccount(mockAccount);
             
             const successMessage = document.getElementById('successMessage');
             if (device === 'Use another account') {
@@ -867,6 +985,16 @@
 
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            const email = this.querySelector('input[type="text"]').value;
+            const name = email.split('@')[0]; // Simple name extraction from email
+            
+            // Save the account
+            saveRecentAccount({
+                name: name,
+                email: email,
+                avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`
+            });
+
             const successMessage = document.getElementById('successMessage');
             successMessage.textContent = 'Successfully signed in!';
             successMessage.classList.add('show');
@@ -882,9 +1010,13 @@
             e.stopPropagation();  // Add this to prevent event bubbling
             const modal = document.getElementById('forgotPasswordModal');
             const signInModal = document.getElementById('signInModal');
+            const googleModal = document.getElementById('googleModal');
+            const facebookModal = document.getElementById('facebookModal');
             
-            // Close sign in modal if it's open
+            // Close all other modals
             signInModal.classList.remove('show');
+            googleModal.classList.remove('show');
+            facebookModal.classList.remove('show');
             modal.classList.add('show');
         }
 
@@ -895,9 +1027,13 @@
             if (option === 'email') {
                 emailInput.style.display = 'block';
                 phoneInput.style.display = 'none';
+                emailInput.querySelector('input').required = true;
+                phoneInput.querySelector('input').required = false;
             } else {
                 emailInput.style.display = 'none';
                 phoneInput.style.display = 'block';
+                emailInput.querySelector('input').required = false;
+                phoneInput.querySelector('input').required = true;
             }
         }
 
@@ -928,9 +1064,13 @@
             e.stopPropagation();  // Add this to prevent event bubbling
             const modal = document.getElementById('signInModal');
             const forgotModal = document.getElementById('forgotPasswordModal');
+            const googleModal = document.getElementById('googleModal');
+            const facebookModal = document.getElementById('facebookModal');
             
-            // Close forgot password modal if it's open
+            // Close all other modals
             forgotModal.classList.remove('show');
+            googleModal.classList.remove('show');
+            facebookModal.classList.remove('show');
             modal.classList.add('show');
         }
 
@@ -977,6 +1117,105 @@
             eyeIcon.classList.add('closed');
             signInEyeIcon.classList.add('closed');
         });
+
+        // Add this before the existing script content
+        // Store for recent accounts
+        const RECENT_ACCOUNTS_KEY = 'recentAccounts';
+        
+        // Function to get recent accounts from localStorage
+        function getRecentAccounts() {
+            const accounts = localStorage.getItem(RECENT_ACCOUNTS_KEY);
+            return accounts ? JSON.parse(accounts) : [];
+        }
+
+        // Function to save recent account
+        function saveRecentAccount(account) {
+            let accounts = getRecentAccounts();
+            
+            // Check if account already exists
+            const existingIndex = accounts.findIndex(a => a.email === account.email);
+            if (existingIndex !== -1) {
+                // Move to top if exists
+                accounts.splice(existingIndex, 1);
+            }
+            
+            // Add to beginning of array
+            accounts.unshift(account);
+            
+            // Keep only last 5 accounts
+            accounts = accounts.slice(0, 5);
+            
+            localStorage.setItem(RECENT_ACCOUNTS_KEY, JSON.stringify(accounts));
+            displayRecentAccounts();
+        }
+
+        // Function to remove account
+        function removeRecentAccount(email, event) {
+            event.stopPropagation();
+            let accounts = getRecentAccounts();
+            accounts = accounts.filter(a => a.email !== email);
+            localStorage.setItem(RECENT_ACCOUNTS_KEY, JSON.stringify(accounts));
+            displayRecentAccounts();
+        }
+
+        // Function to display recent accounts
+        function displayRecentAccounts() {
+            const accounts = getRecentAccounts();
+            const recentAccountsSection = document.getElementById('recentAccounts');
+            const recentAccountsGrid = document.getElementById('recentAccountsGrid');
+            
+            if (accounts.length === 0) {
+                recentAccountsSection.style.display = 'none';
+                return;
+            }
+
+            recentAccountsGrid.innerHTML = accounts.map(account => `
+                <div class="recent-account-card" onclick="loginWithRecentAccount('${account.email}')">
+                    <img src="${account.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(account.name)}&background=random`}" 
+                         alt="${account.name}" 
+                         class="recent-account-avatar">
+                    <div class="recent-account-info">
+                        <div class="recent-account-name">${account.name}</div>
+                        <div class="recent-account-email">${account.email}</div>
+                    </div>
+                    <button class="remove-account" onclick="removeRecentAccount('${account.email}', event)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+            
+            recentAccountsSection.style.display = 'block';
+        }
+
+        // Function to login with recent account
+        function loginWithRecentAccount(email) {
+            const accounts = getRecentAccounts();
+            const account = accounts.find(a => a.email === email);
+            if (account) {
+                const successMessage = document.getElementById('successMessage');
+                successMessage.textContent = `Welcome back, ${account.name}!`;
+                successMessage.classList.add('show');
+                
+                setTimeout(() => {
+                    successMessage.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // Add this new function for Google modal
+        function showGoogleModal() {
+            console.log('Google button clicked');
+            const modal = document.getElementById('googleModal');
+            const signInModal = document.getElementById('signInModal');
+            const forgotModal = document.getElementById('forgotPasswordModal');
+            const facebookModal = document.getElementById('facebookModal');
+            
+            // Close all other modals
+            signInModal.classList.remove('show');
+            forgotModal.classList.remove('show');
+            facebookModal.classList.remove('show');
+            modal.classList.add('show');
+        }
     </script>
 </body>
 </html> 
