@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add Google Sign-In API -->
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
+    <!-- Add Facebook SDK -->
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 2rem;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 480px;
+            padding: 2.5rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header img.facebook-logo {
+            width: 240px;
+            height: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .header-buttons h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 0;
+            text-align: center;
+        }
+
+        .sign-in-link {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .sign-in-link a {
+            color: #4a90e2;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .sign-in-link a:hover {
+            color: #357abd;
+            text-decoration: underline;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .forgot-password {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            gap: 20px;
+        }
+
+        .forgot-password .sign-in-link {
+            color: #1877f2;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .forgot-password .forgot-link {
+            color: #1877f2;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .eye-icon {
+            font-size: 16px;
+            transition: all 0.2s ease;
+            display: inline-block;
+            color: #1c1e21;  /* Black color when password is hidden */
+        }
+
+        .eye-icon.closed {
+            opacity: 0.8;
+        }
+
+        .eye-icon.open {
+            color: #1877f2;  /* Facebook blue when password is visible */
+        }
+
+        @keyframes blink {
+            0% { transform: scaleY(1); }
+            45% { transform: scaleY(0.2); }
+            55% { transform: scaleY(0.2); }
+            100% { transform: scaleY(1); }
+        }
+
+        .eye-icon.blinking {
+            animation: blink 0.2s ease-in-out;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            background-color: #4a90e2;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-btn:hover {
+            background-color: #357abd;
+            transform: translateY(-1px);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #666;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e1e1e1;
+        }
+
+        .divider span {
+            padding: 0 1rem;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .social-btn {
+            width: 50px !important;
+            height: 50px !important;
+            border-radius: 50% !important;
+            padding: 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .social-btn img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .social-btn span {
+            display: none;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .social-accounts {
+            position: relative;
+            width: 360px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 1.5rem;
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show .social-accounts {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .social-accounts-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .social-accounts-header img {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 1rem;
+        }
+
+        .social-accounts-header h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .social-accounts-header p {
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .account-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+            border: 1px solid transparent;
+        }
+
+        .account-item:hover {
+            background: #f5f7fa;
+            border-color: #e1e1e1;
+        }
+
+        .account-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            object-fit: cover;
+        }
+
+        .account-info {
+            flex: 1;
+        }
+
+        .account-name {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #333;
+        }
+
+        .account-device {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .google-btn {
+            background: #fff;
+            color: #757575;
+            border: 2px solid #e1e1e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 15px;
+        }
+
+        .google-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .google-btn img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .facebook-btn {
+            background: #1877f2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 15px;
+        }
+
+        .facebook-btn:hover {
+            background: #166fe5;
+        }
+
+        .facebook-btn img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .facebook-btn i {
+            display: none;
+        }
+
+        .use-another {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border-top: 1px solid #e1e1e1;
+            margin-top: 1rem;
+        }
+
+        .use-another:hover {
+            background: #f5f7fa;
+        }
+
+        .use-another i {
+            width: 40px;
+            height: 40px;
+            background: #f1f3f4;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            color: #5f6368;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #666;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .close-modal:hover {
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .success-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .forgot-password-modal {
+            max-width: 400px;
+        }
+
+        .recovery-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .recovery-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .recovery-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .recovery-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            gap: 0.5rem;
+        }
+
+        .recovery-option input[type="radio"]:checked + label {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .recovery-option i {
+            font-size: 1.5rem;
+            color: #4a90e2;
+        }
+
+        .recovery-option span {
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .recovery-input {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-overlay .social-accounts {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .sign-in-form {
+            padding: 1rem 0;
+        }
+
+        .sign-in-form .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .sign-in-form .social-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .sign-in-form .social-btn {
+            width: auto;
+            min-width: 120px;
+            height: 45px;
+            border-radius: 8px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 20px;
+        }
+
+        .sign-in-form .social-btn img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .sign-in-form .social-btn i {
+            display: none;
+        }
+
+        .sign-in-form .social-btn span {
+            font-weight: 500;
+        }
+
+        .sign-in-form .divider {
+            margin: 1.5rem 0;
+        }
+
+        .social-accounts {
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+        }
+
+        .action-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            gap: 20px;
+        }
+
+        .action-links .create-account {
+            color: #1877f2;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .action-links .forgot-link {
+            color: #1877f2;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .action-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="header-buttons">
+                <h1>Log In</h1>
+            </div>
+        </div>
+        <form id="loginForm">
+            <div class="form-group">
+                <input type="text" class="input-field" placeholder="Email or Phone Number" required>
+            </div>
+            <div class="form-group">
+                <input type="password" class="input-field" id="passwordField" placeholder="Password" required>
+                <button type="button" class="toggle-password" onclick="togglePassword()">
+                    <i class="fas fa-eye eye-icon closed" id="eyeIcon"></i>
+                </button>
+            </div>
+            <div class="action-links">
+                <a href="#" class="create-account" onclick="showSignInModal(event)">Create new account</a>
+                <a href="#" class="forgot-link" onclick="showForgotPasswordModal(event)">Forgot Password?</a>
+            </div>
+            <button type="submit" class="login-btn">Log In</button>
+            
+            <div class="divider">
+                <span>or continue with</span>
+            </div>
+
+            <div class="social-buttons">
+                <button type="button" class="social-btn google-btn" onclick="toggleAccounts('google')">
+                    <img src="https://www.google.com/favicon.ico" alt="Google Logo">
+                </button>
+                <button type="button" class="social-btn facebook-btn" onclick="toggleAccounts('facebook')">
+                    <img src="https://static.xx.fbcdn.net/rsrc.php/v3/yN/r/EwBqeC0pbHL.png" alt="Facebook Logo">
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Google Account Modal -->
+    <div class="modal-overlay" id="googleModal">
+        <div class="social-accounts">
+            <button class="close-modal" onclick="closeModal('google')">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="social-accounts-header">
+                <img src="https://www.google.com/favicon.ico" alt="Google">
+                <h3>Sign in with Google</h3>
+                <p>Choose an account to continue</p>
+            </div>
+            <div class="account-item" onclick="selectAccount('google', 'Chrome - Windows')">
+                <img src="https://ui-avatars.com/api/?name=RW&background=4285f4" alt="Windows Account">
+                <div class="account-info">
+                    <div class="account-name">Windows Account</div>
+                    <div class="account-device">Synced with Chrome</div>
+                </div>
+            </div>
+            <div class="account-item" onclick="selectAccount('google', 'Android Device')">
+                <img src="https://ui-avatars.com/api/?name=AD&background=ea4335" alt="Android Account">
+                <div class="account-info">
+                    <div class="account-name">Android Account</div>
+                    <div class="account-device">Connected to this device</div>
+                </div>
+            </div>
+            <div class="use-another" onclick="selectAccount('google', 'Use another account')">
+                <i class="fas fa-user-plus"></i>
+                <div class="account-info">
+                    <div class="account-name">Use another account</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Facebook Account Modal -->
+    <div class="modal-overlay" id="facebookModal">
+        <div class="social-accounts">
+            <button class="close-modal" onclick="closeModal('facebook')">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="social-accounts-header">
+                <img src="https://static.xx.fbcdn.net/rsrc.php/yD/r/d4ZIVX-5C-b.ico" alt="Facebook">
+                <h3>Sign in with Facebook</h3>
+                <p>Choose an account to continue</p>
+            </div>
+            <div class="account-item" onclick="selectAccount('facebook', 'Facebook App')">
+                <img src="https://ui-avatars.com/api/?name=FB&background=1877f2" alt="Facebook App Account">
+                <div class="account-info">
+                    <div class="account-name">Facebook App</div>
+                    <div class="account-device">Connected to this device</div>
+                </div>
+            </div>
+            <div class="use-another" onclick="selectAccount('facebook', 'Use another account')">
+                <i class="fas fa-user-plus"></i>
+                <div class="account-info">
+                    <div class="account-name">Use another account</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this new modal for forgot password -->
+    <div class="modal-overlay" id="forgotPasswordModal">
+        <div class="social-accounts forgot-password-modal">
+            <button class="close-modal" onclick="closeModal('forgotPassword')">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="social-accounts-header">
+                <i class="fas fa-lock" style="font-size: 2rem; color: #4a90e2; margin-bottom: 1rem;"></i>
+                <h3>Forgot Password</h3>
+                <p>Enter your email or phone number to reset your password</p>
+            </div>
+            <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)">
+                <div class="recovery-options">
+                    <div class="recovery-option" onclick="selectRecoveryOption('email')">
+                        <input type="radio" name="recoveryMethod" id="emailOption" value="email" checked>
+                        <label for="emailOption">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email</span>
+                        </label>
+                    </div>
+                    <div class="recovery-option" onclick="selectRecoveryOption('phone')">
+                        <input type="radio" name="recoveryMethod" id="phoneOption" value="phone">
+                        <label for="phoneOption">
+                            <i class="fas fa-phone"></i>
+                            <span>Phone</span>
+                        </label>
+                    </div>
+                </div>
+                <div id="emailInput" class="recovery-input">
+                    <input type="email" placeholder="Enter your email" class="input-field">
+                </div>
+                <div id="phoneInput" class="recovery-input" style="display: none;">
+                    <input type="tel" placeholder="Enter your phone number" class="input-field">
+                </div>
+                <button type="submit" class="login-btn">Reset Password</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add new Sign In Modal -->
+    <div class="modal-overlay" id="signInModal">
+        <div class="social-accounts">
+            <button class="close-modal" onclick="closeModal('signIn')">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="social-accounts-header">
+                <h3>Sign In</h3>
+                <p>Choose how you want to sign in</p>
+            </div>
+            <form id="signInForm" class="sign-in-form">
+                <div class="form-group">
+                    <input type="text" class="input-field" placeholder="Email or Phone Number" required>
+                </div>
+                <div class="forgot-password" style="text-align: left;">
+                    <a href="#" onclick="showForgotPasswordModal(event)">Forgot Password?</a>
+                </div>
+                <div class="divider">
+                    <span>or continue with</span>
+                </div>
+                <div class="social-buttons" style="margin-top: 1rem;">
+                    <button type="button" class="social-btn google-btn" onclick="toggleAccounts('google')">
+                        <img src="https://www.google.com/favicon.ico" alt="Google Logo">
+                    </button>
+                    <button type="button" class="social-btn facebook-btn" onclick="toggleAccounts('facebook')">
+                        <img src="https://static.xx.fbcdn.net/rsrc.php/v3/yN/r/EwBqeC0pbHL.png" alt="Facebook Logo">
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="successMessage" class="success-message">
+        Successfully logged in!
+    </div>
+
+    <script>
+        // Initialize Facebook SDK
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId: 'YOUR_FACEBOOK_APP_ID',
+                cookie: true,
+                xfbml: true,
+                version: 'v17.0'
+            });
+        };
+
+        // Google Sign-In
+        function handleGoogleSignIn() {
+            gapi.load('auth2', function() {
+                gapi.auth2.init({
+                    client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com'
+                }).then(function(auth2) {
+                    auth2.signIn().then(function(googleUser) {
+                        const profile = googleUser.getBasicProfile();
+                        console.log('Google User:', {
+                            id: profile.getId(),
+                            name: profile.getName(),
+                            email: profile.getEmail()
+                        });
+                        // Handle successful Google sign-in here
+                    });
+                });
+            });
+        }
+
+        // Facebook Sign-In
+        function handleFacebookSignIn() {
+            FB.login(function(response) {
+                if (response.authResponse) {
+                    FB.api('/me', { fields: 'name, email' }, function(response) {
+                        console.log('Facebook User:', response);
+                        // Handle successful Facebook sign-in here
+                    });
+                }
+            }, { scope: 'public_profile,email' });
+        }
+
+        // Initialize eye state
+        document.addEventListener('DOMContentLoaded', function() {
+            const eyeIcon = document.getElementById('eyeIcon');
+            eyeIcon.classList.add('closed');
+        });
+
+        function togglePassword() {
+            const passwordField = document.getElementById('passwordField');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            eyeIcon.classList.add('blinking');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                eyeIcon.classList.remove('closed');
+                eyeIcon.classList.add('open');
+            } else {
+                passwordField.type = 'password';
+                eyeIcon.classList.add('closed');
+                eyeIcon.classList.remove('open');
+            }
+            
+            setTimeout(() => {
+                eyeIcon.classList.remove('blinking');
+            }, 200);
+        }
+
+        function toggleAccounts(provider) {
+            const modal = document.getElementById(provider + 'Modal');
+            modal.classList.add('show');
+        }
+
+        function closeModal(provider) {
+            const modal = document.getElementById(provider + 'Modal');
+            modal.classList.remove('show');
+            
+            // Reset form if it's the sign in modal
+            if (provider === 'signIn') {
+                document.getElementById('signInForm').reset();
+            }
+        }
+
+        function selectAccount(provider, device) {
+            const modal = document.getElementById(provider + 'Modal');
+            modal.classList.remove('show');
+            
+            const successMessage = document.getElementById('successMessage');
+            if (device === 'Use another account') {
+                successMessage.textContent = `Please sign in with another ${provider} account`;
+            } else {
+                successMessage.textContent = `Signed in with ${device}`;
+            }
+            successMessage.classList.add('show');
+            
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 3000);
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                const modals = ['google', 'facebook', 'forgotPassword', 'signIn'];
+                modals.forEach(modal => {
+                    document.getElementById(modal + 'Modal').classList.remove('show');
+                });
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const successMessage = document.getElementById('successMessage');
+            successMessage.textContent = 'Successfully signed in!';
+            successMessage.classList.add('show');
+            
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 3000);
+        });
+
+        // Add these new functions for forgot password functionality
+        function showForgotPasswordModal(e) {
+            e.preventDefault();
+            e.stopPropagation();  // Add this to prevent event bubbling
+            const modal = document.getElementById('forgotPasswordModal');
+            const signInModal = document.getElementById('signInModal');
+            
+            // Close sign in modal if it's open
+            signInModal.classList.remove('show');
+            modal.classList.add('show');
+        }
+
+        function selectRecoveryOption(option) {
+            const emailInput = document.getElementById('emailInput');
+            const phoneInput = document.getElementById('phoneInput');
+            
+            if (option === 'email') {
+                emailInput.style.display = 'block';
+                phoneInput.style.display = 'none';
+            } else {
+                emailInput.style.display = 'none';
+                phoneInput.style.display = 'block';
+            }
+        }
+
+        function handleForgotPassword(e) {
+            e.preventDefault();
+            const method = document.querySelector('input[name="recoveryMethod"]:checked').value;
+            const input = method === 'email' ? 
+                document.querySelector('#emailInput input').value :
+                document.querySelector('#phoneInput input').value;
+            
+            const successMessage = document.getElementById('successMessage');
+            successMessage.textContent = `Password reset link sent to your ${method}: ${input}`;
+            successMessage.classList.add('show');
+            
+            closeModal('forgotPassword');
+            
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 3000);
+        }
+
+        // Add event listener for forgot password link
+        document.querySelector('.forgot-password a').addEventListener('click', showForgotPasswordModal);
+
+        // Update the sign in button click handler
+        function showSignInModal(e) {
+            e.preventDefault();
+            e.stopPropagation();  // Add this to prevent event bubbling
+            const modal = document.getElementById('signInModal');
+            const forgotModal = document.getElementById('forgotPasswordModal');
+            
+            // Close forgot password modal if it's open
+            forgotModal.classList.remove('show');
+            modal.classList.add('show');
+        }
+
+        // Add form submit handler for sign in form
+        document.getElementById('signInForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const successMessage = document.getElementById('successMessage');
+            successMessage.textContent = 'Processing sign in...';
+            successMessage.classList.add('show');
+            
+            closeModal('signIn');
+            
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 3000);
+        });
+    </script>
+</body>
+</html> 
